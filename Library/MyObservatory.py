@@ -1,4 +1,5 @@
 import time
+import datetime
 import logging
 
 from appium import webdriver
@@ -18,7 +19,6 @@ class App():
 
         self.driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', desired_caps)
         time.sleep(5)
-        self.actions = TouchAction(self.driver)
 
         try:
             self.driver.find_element(AppiumBy.ID, "hko.MyObservatory_v1_0:id/btn_friendly_reminder_skip").click()
@@ -27,9 +27,8 @@ class App():
         time.sleep(5)
         logging.info("Successfully launch app.")
 
-    def load_main_page(self):
-        main_page = self.driver.find_element(AppiumBy.ID, "hko.MyObservatory_v1_0:id/main_content_container")
-        main_page.click()
+    def main_content_container(self):
+        return self.driver.find_element(AppiumBy.ID, "hko.MyObservatory_v1_0:id/main_content_container")
 
     def open_menu(self):
         try:
@@ -38,35 +37,38 @@ class App():
             self.driver.find_element(AppiumBy.ID, "hko.MyObservatory_v1_0:id/home_page").click()
             time.sleep(3)
             self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageButton[@content-desc='向上瀏覽']").click()
+            time.sleep(3)
         except Exception as e:
             raise RuntimeError(e)
         logging.info("Successfully open menu.")
 
-    def get_nineday_info(self):
+    def get_tomorrow_info(self):
+        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+        dateFormatter = "%d %B"
+        tomorrow = tomorrow.strftime(dateFormatter)
+
         self.open_menu()
         left_drawer = self.driver.find_element(AppiumBy.ID, "hko.MyObservatory_v1_0:id/left_drawer")
-        print(dir(self.actions))
+        action = TouchAction(self.driver)
+        for i in range(0, 2):
+            action.long_press(x=136, y=940).move_to(x=136, y=454).release().perform()
+        left_drawer.find_element(AppiumBy.XPATH, "//*[@text='9-Day Forecast']").click()
 
-    def refresh(self):
-        refresh_button = self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@content-desc='重新整理']")
-        refresh_button.click()
-        time.sleep(3)
-
-    def check_exists_by_id(self, search_id):
-        try:
-            # self.driver.find_element_by_id(search_id)
-            self.driver.find_element(AppiumBy.ID, search_id)
-            return True
-        except Exception as e:
-            print(e)
-            return False
-
+        result = self.driver.find_elements(AppiumBy.XPATH, "//*")
+        for element in result:
+            try:
+                content = element.get_attribute("content-desc")
+                if tomorrow in content and "between" in content:
+                    result = content
+            except Exception:
+                continue
+        print(result)
+        return result
 
 
 def main():
     app = App()
-    #app.get_nineday_info()
-    app.open_menu()
+    app.get_tomorrow_info()
 
 
 if __name__ == '__main__':
