@@ -7,25 +7,32 @@ from appium.webdriver.common.appiumby import AppiumBy
 from appium.webdriver.common.touch_action import TouchAction
 
 
+class MyObservatory():
+    def __init__(self, platform_name, platform_version, device_name):
+        self.desired_caps = dict()
+        self.desired_caps['platformName'] = platform_name
+        self.desired_caps['platformVersion'] = platform_version
+        self.desired_caps['deviceName'] = device_name
+        self.desired_caps['appPackage'] = "hko.MyObservatory_v1_0"
+        self.desired_caps['appActivity'] = "hko.homepage.Homepage2Activity"
 
-class App():
-    def __init__(self):
-        desired_caps = {}
-        desired_caps['platformName'] = 'Android'
-        desired_caps['platformVersion'] = '7.1.2'
-        desired_caps['deviceName'] = '127.0.0.1:62001'
-        desired_caps['appPackage'] = 'hko.MyObservatory_v1_0'
-        desired_caps['appActivity'] = 'hko.homepage.Homepage2Activity'
+    def launch(self):
+        retry = 0
+        while retry <= 3:
+            try:
+                self.driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', self.desired_caps)
+                time.sleep(5)
+                self.driver.find_element(AppiumBy.ID, "hko.MyObservatory_v1_0:id/btn_friendly_reminder_skip").click()
+                time.sleep(5)
+                logging.info("Successfully launch app.")
+                return
+            except Exception as e:
+                logging.info(f"Failed to launch app due to {e}, retry again")
+                retry += 1
+        raise RuntimeError("Failed to launch app after 3 times retry.")
 
-        self.driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', desired_caps)
-        time.sleep(5)
-
-        try:
-            self.driver.find_element(AppiumBy.ID, "hko.MyObservatory_v1_0:id/btn_friendly_reminder_skip").click()
-        except Exception:
-            pass
-        time.sleep(5)
-        logging.info("Successfully launch app.")
+    def close(self):
+        self.driver.close_app()
 
     def main_content_container(self):
         return self.driver.find_element(AppiumBy.ID, "hko.MyObservatory_v1_0:id/main_content_container")
@@ -44,8 +51,8 @@ class App():
 
     def get_tomorrow_info(self):
         tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-        dateFormatter = "%d %B"
-        tomorrow = tomorrow.strftime(dateFormatter)
+        dateformatter = "%d %B"
+        tomorrow = tomorrow.strftime(dateformatter)
 
         self.open_menu()
         left_drawer = self.driver.find_element(AppiumBy.ID, "hko.MyObservatory_v1_0:id/left_drawer")
@@ -63,12 +70,17 @@ class App():
             except Exception:
                 continue
         print(result)
+        time.sleep(3)
         return result
 
 
 def main():
-    app = App()
+    app = MyObservatory(platform_name="Android",
+                        platform_version="7.1.2",
+                        device_name="127.0.0.1:62001")
+    app.launch()
     app.get_tomorrow_info()
+    app.close()
 
 
 if __name__ == '__main__':
