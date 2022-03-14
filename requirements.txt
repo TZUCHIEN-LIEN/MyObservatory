@@ -1,1 +1,6 @@
 appium-python-client
+robotframework==3.1.2
+robotframework-ride==1.7.4.1
+robotframework-selenium2library==3.0.0
+robotframework-seleniumlibrary==4.3.0
+wxPython==4.0.7.post2
