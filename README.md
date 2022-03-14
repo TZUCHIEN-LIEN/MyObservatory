@@ -26,7 +26,7 @@ Once previous steps are done, you should have your device's platform name/platfo
 use them to replace the parameters in ./TestCases/AppTest.robot line 7
 
 # 6. Run Test
-The test cases are packaged as Robotframework cases located at ./TestCases/AppTest.robot,
+The test cases are packaged as Robotframework cases locates at ./TestCases/AppTest.robot,
 run the command to execute tests.
 ```
 robot -T --loglevel DEBUG:INFO .\TestCases\AppTest.robot
