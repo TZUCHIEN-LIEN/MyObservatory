@@ -8,19 +8,20 @@ from appium.webdriver.common.touch_action import TouchAction
 
 
 class MyObservatory():
-    def __init__(self, platform_name, platform_version, device_name):
+    def __init__(self, platform_name, platform_version, device_name, appium_host_address):
         self.desired_caps = dict()
         self.desired_caps['platformName'] = platform_name
         self.desired_caps['platformVersion'] = platform_version
         self.desired_caps['deviceName'] = device_name
         self.desired_caps['appPackage'] = "hko.MyObservatory_v1_0"
         self.desired_caps['appActivity'] = "hko.homepage.Homepage2Activity"
+        self.appium_host = appium_host_address
 
     def launch(self):
         retry = 0
         while retry <= 3:
             try:
-                self.driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', self.desired_caps)
+                self.driver = webdriver.Remote(self.appium_host, self.desired_caps)
                 time.sleep(5)
                 self.driver.find_element(AppiumBy.ID, "hko.MyObservatory_v1_0:id/btn_friendly_reminder_skip").click()
                 time.sleep(5)
@@ -59,7 +60,10 @@ class MyObservatory():
         action = TouchAction(self.driver)
         for i in range(0, 2):
             action.long_press(x=136, y=940).move_to(x=136, y=454).release().perform()
-        left_drawer.find_element(AppiumBy.XPATH, "//*[@text='9-Day Forecast']").click()
+        try:
+            left_drawer.find_element(AppiumBy.XPATH, "//*[@text='9-Day Forecast']").click()
+        except Exception as e:
+            raise RuntimeError(f"Failed to open 9-Day Forecast page due to {e}")
 
         result = self.driver.find_elements(AppiumBy.XPATH, "//*")
         for element in result:
@@ -69,7 +73,6 @@ class MyObservatory():
                     result = content
             except Exception:
                 continue
-        print(result)
         time.sleep(3)
         return result
 
