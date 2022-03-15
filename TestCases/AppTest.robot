@@ -8,14 +8,16 @@ Library    ..\\Libraries\\MyObservatory.py    Android    7.1.2    127.0.0.1:6200
 
 
 *** Test Cases ***
-Get Tomorrow Weather Info
+Task1
+    [Documentation]    Get Tomorrow Weather Info
     MyObservatory.Launch
     ${result}=    MyObservatory.Get Tomorrow Info
     Log    ${result}
     [Teardown]
     MyObservatory.Close
 
-Get 2 Day Later Humidity
+Task2
+    [Documentation]    Get 2 Day Later Humidity
     ${result}=    HKObservatoryAPI.Get 2 Day Later Humidity
     Log    ${result}
 
